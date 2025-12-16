@@ -1,0 +1,5 @@
+hardware_mgmnt_system/.env
+.venv/
+hardware_mgmnt_system/assets/__pycache__/*
+hardware_mgmnt_system/assets/migrations/*
+hardware_mgmnt_system/hardware_mgmnt_system/__pycache__/*
