@@ -1,0 +1,32 @@
+[
+    {
+        "model": "assets.department",
+        "fields": {
+            "name": "Information Technology"
+        }
+    },
+    {
+        "model": "assets.department",
+        "fields": {
+            "name": "Human Resource"
+        }
+    },
+    {
+        "model": "assets.department",
+        "fields": {
+            "name": "Procurement"
+        }
+    },
+    {
+        "model": "assets.department",
+        "fields": {
+            "name": "Transport and Logistics"
+        }
+    },
+    {
+        "model": "assets.department",
+        "fields": {
+            "name": "Sales and Marketing"
+        }
+    }
+]
