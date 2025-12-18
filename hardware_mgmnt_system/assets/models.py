@@ -32,6 +32,14 @@ class Employee(models.Model):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=False)
     role = models.ForeignKey(Role, on_delete=models.PROTECT, related_name="employees")
 
+    # class Meta:
+    #     constraints = [
+    #         models.CheckConstraint(
+    #             check=models.Q(role__department=models.F('department')),
+    #             name="role_department_match"
+    #         )
+    #     ]
+
     def __str__(self):
         return self.user.get_username()
 

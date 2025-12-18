@@ -41,7 +41,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 1,
+        "pk": 6,
         "fields": {
             "department": 2,
             "name": "HR Generalist"
@@ -49,7 +49,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 2,
+        "pk": 7,
         "fields": {
             "department": 2,
             "name": "Talent Acquisition Specialist"
@@ -57,7 +57,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 3,
+        "pk": 8,
         "fields": {
             "department": 2,
             "name": "Training and Development Officer"
@@ -65,7 +65,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 4,
+        "pk": 9,
         "fields": {
             "department": 2,
             "name": "Compensation and Benefits Manager"
@@ -73,7 +73,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 5,
+        "pk": 10,
         "fields": {
             "department": 2,
             "name": "Employee Relations Specialist"
@@ -81,7 +81,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 1,
+        "pk": 11,
         "fields": {
             "department": 3,
             "name": "Procurement Officer"
@@ -89,7 +89,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 2,
+        "pk": 12,
         "fields": {
             "department": 3,
             "name": "Supplier Relationship Manager"
@@ -97,7 +97,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 3,
+        "pk": 13,
         "fields": {
             "department": 3,
             "name": "Category Manager"
@@ -105,7 +105,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 4,
+        "pk": 14,
         "fields": {
             "department": 3,
             "name": "Contract Specialist"
@@ -113,7 +113,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 5,
+        "pk": 15,
         "fields": {
             "department": 3,
             "name": "Inventory Planner"
@@ -121,7 +121,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 1,
+        "pk": 16,
         "fields": {
             "department": 4,
             "name": "Logistics Coordinator"
@@ -129,7 +129,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 2,
+        "pk": 17,
         "fields": {
             "department": 4,
             "name": "Fleet manager"
@@ -137,7 +137,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 3,
+        "pk": 18,
         "fields": {
             "department": 4,
             "name": "Warehouse manager"
@@ -145,7 +145,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 4,
+        "pk": 19,
         "fields": {
             "department": 4,
             "name": "Transport Planner"
@@ -153,7 +153,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 5,
+        "pk": 20,
         "fields": {
             "department": 4,
             "name": "Supply Chain Analyst"
@@ -161,7 +161,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 1,
+        "pk": 21,
         "fields": {
             "department": 5,
             "name": "Sales Executive"
@@ -169,7 +169,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 2,
+        "pk": 22,
         "fields": {
             "department": 5,
             "name": "Account Manager"
@@ -177,7 +177,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 3,
+        "pk": 23,
         "fields": {
             "department": 5,
             "name": "Marketing Manager"
@@ -185,7 +185,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 4,
+        "pk": 24,
         "fields": {
             "department": 5,
             "name": "Digital Marketing Specialist"
@@ -193,7 +193,7 @@
     },
     {
         "model": "assets.role",
-        "pk": 5,
+        "pk": 25,
         "fields": {
             "department": 5,
             "name": "Market Research Analyst"
