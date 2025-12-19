@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.utils import timezone
 
 # Create your models here.
 class Department(models.Model):
@@ -82,12 +83,19 @@ class Computer(models.Model):
         if not self.asset_tag:
             self.asset_tag = self.generate_asset_tag()
 
-        if self.current_user_id:
+        super().save(*args, **kwargs)
+        latest_assignment = ComputerAssignment.objects.filter(
+            computer=self, end_date__isnull=True
+        ).order_by('-start_date').first()
+
+        if latest_assignment:
+            self.current_user = latest_assignment.employee
             self.status = 'Issued'
         else:
+            self.current_user = None
             self.status = 'Inventory'
-
-        super().save(*args, **kwargs)
+        
+        super().save(update_fields=['current_user', 'status'])
 
     def __str__(self):
         return self.asset_tag
@@ -160,8 +168,14 @@ class ComputerAssignment(models.Model):
         return f"{self.computer.asset_tag} -> {self.employee.user.username} ({self.start_date} - {end})"
 
 class ComputerRepairHistory(models.Model):
+    COMPONENT_CHOICES = [
+        ('MB', 'Motheboard'),
+        ('RAM', 'RAM'),
+        ('Storage', 'Secondary Storage'),
+        ('Display', 'Computer Display'),
+    ]
     computer = models.ForeignKey(Computer, on_delete=models.CASCADE, related_name="repairs")
-    repaired_component = models.CharField(max_length=100)
+    repaired_component = models.CharField(max_length=100, choices=COMPONENT_CHOICES)
     repair_cost = models.DecimalField(max_digits=10, decimal_places=2)
     date_of_repair = models.DateField()
     comments = models.TextField(blank=True)
@@ -171,3 +185,8 @@ class ComputerRepairHistory(models.Model):
 
     def __str__(self):
         return f"{self.computer.asset_tag} reapir on {self.date_of_repair}"
+    
+    def save(self, *args, **kwargs):
+        if not self.date_of_repair:
+            self.date_of_repair = timezone.now().date()
+        super().save(*args, **kwargs)
