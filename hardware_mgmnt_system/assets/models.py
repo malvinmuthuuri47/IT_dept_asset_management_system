@@ -81,6 +81,12 @@ class Computer(models.Model):
     def save(self, *args, **kwargs):
         if not self.asset_tag:
             self.asset_tag = self.generate_asset_tag()
+
+        if self.current_user_id:
+            self.status = 'Issued'
+        else:
+            self.status = 'Inventory'
+
         super().save(*args, **kwargs)
 
     def __str__(self):
