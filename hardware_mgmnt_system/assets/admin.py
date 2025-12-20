@@ -139,3 +139,14 @@ class ComputerAdmin(admin.ModelAdmin):
         super().save_formset(request, form, formset, change)
         if formset.model == ComputerAssignment:
             form.instance.save()
+    
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.status == 'Faulty':
+            self.message_user(request, "Faulty computers canot be deleted", level="warning")
+            return False
+        return super().has_delete_permission(request, obj)
+    
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.status == 'Faulty':
+            return self.readonly_fields + ['status', 'current_user']
+        return self.readonly_fields

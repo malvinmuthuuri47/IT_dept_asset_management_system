@@ -6,39 +6,63 @@ from .models import Computer, ComputerAssignment, ComputerRepairHistory
 from .serializers import UserComputerSerializer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
+import uuid
 
 # Create your views here.
+@method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
+        # generate unique session ID for this login attempt
+        session_id = str(uuid.uuid4())
+        lock_key = f"login_lock:{request.META.get('REMOTE_ADDR', 'unknown')}"
 
-        if not username or not password:
+        # check if user is already logging in (30s lock)
+        if cache.get(lock_key):
             return Response(
-                {"detail": "Username and password are required."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"Detail": "Login in progress. Please wait..."},
+                status=status.HTTP_429_TOO_MAY_REQUESTS
             )
         
-        user = authenticate(request, username=username, password=password)
-        if user is None:
-            return Response(
-                {"detail": "Invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        
-        # create a session
-        login(request, user)
+        # set lock
+        cache.set(lock_key, session_id, 30)
 
-        return Response(
-            {
-                "detail": "Logged in successfully.",
-                "username": user.username,
-                "is_staff": user.is_staff,
-                "is_superuser": user.is_superuser,
-            }
-        )
+        try:
+            username = request.data.get("username")
+            password = request.data.get("password")
+
+            if not username or not password:
+                return Response(
+                    {"detail": "Username and password are required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            user = authenticate(request, username=username, password=password)
+            if user is None:
+                return Response(
+                    {"detail": "Invalid credentials"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+            
+            # clear lock on success
+            cache.delete(lock_key)
+            
+            # create a session
+            login(request, user)
+
+            return Response(
+                {
+                    "detail": "Logged in successfully.",
+                    "username": user.username,
+                }
+            )
+        except Exception:
+            cache.delete(lock_key)  # clear lock on error
+            raise
 
 class LogoutView(APIView):
     permission_classes = [permissions.AllowAny]

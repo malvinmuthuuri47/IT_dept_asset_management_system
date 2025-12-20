@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class Department(models.Model):
@@ -47,7 +48,6 @@ class Employee(models.Model):
 class Computer(models.Model):
     STATUS_CHOICES = [
         ('Issued', 'In Use'),
-        ('In Repair', 'In Repair'),
         ('Inventory', 'In Inventory'),
         ('Faulty', 'Faulty')
     ]
@@ -56,6 +56,17 @@ class Computer(models.Model):
     current_user = models.OneToOneField(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name="computer")
     department = models.ForeignKey(Department, on_delete=models.PROTECT, related_name="computers")
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, blank=False, default='Inventory')
+
+    def clean(self):
+        """Prevent assignment if faulty"""
+        if self.status == 'Faulty' and self.current_user:
+            raise ValidationError("Faulty computers cannot be assigned")
+
+    def delete(self, *args, **kwargs):
+        """Prevent deletion if faulty"""
+        if self.status == "Faulty":
+            raise ValidationError("Faulty computers are reserved and cannot be deleted")
+        super().delete(*args, **kwargs)
 
     def generate_asset_tag(self):
         if self.computer_name and self.department:
