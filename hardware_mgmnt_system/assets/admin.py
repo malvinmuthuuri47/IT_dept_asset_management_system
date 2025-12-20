@@ -52,13 +52,13 @@ class EmployeeAdmin(admin.ModelAdmin):
 class ComputerInfoInline(admin.StackedInline):
     model = ComputerInfo
     fields = ['brand', 'name', 'screen_type', 'screen_aspect_ratio', 'memory_size', 'storage_size', 'storage_type']
-    extra = 1
+    extra = 0
 
 class ComputerAssignmentInline(admin.TabularInline):
     model = ComputerAssignment
     fields = ['employee', 'start_date', 'end_date']
     # readonly_fields = ['start_date']
-    extra = 1
+    extra = 0
     raw_id_fields = ['employee']
     can_delete=True
 
@@ -76,27 +76,27 @@ class ComputerAssignmentInline(admin.TabularInline):
 class ComputerRepairHistoryInline(admin.TabularInline):
     model = ComputerRepairHistory
     fields = ['repaired_component', 'date_of_repair', 'repair_cost', 'comments']
-    # readonly_fields = ['date_of_repair', 'date_of_repair', 'repair_cost', 'comments']
-    list_display = ['repaired_component', 'date_of_repair', 'repair_cost']
-    extra = 1
+    readonly_fields = fields
+    # list_display = ['repaired_component', 'date_of_repair', 'repair_cost']
+    extra = 0
     can_delete = False
 
-    def get_readonly_fields(self, request, obj=None):
-        '''All fields readonly EXCEPT for New Entries'''
-        if obj and obj.pk:
-            return self.fields
-        return []
+    # def get_readonly_fields(self, request, obj=None):
+    #     '''All fields readonly EXCEPT for New Entries'''
+    #     if obj and obj.pk:
+    #         return self.fields
+    #     return []
     
-    def has_delete_permission(self, request, obj=None):
+    # def has_delete_permission(self, request, obj=None):
+    #     return False
+
+    # def get_queryset(self, request):
+    #     '''Show all history, but readonly'''
+    #     qs = super().get_queryset(request)
+    #     return qs.select_related('computer')
+
+    def has_add_permission(self, request, obj):
         return False
-
-    def get_queryset(self, request):
-        '''Show all history, but readonly'''
-        qs = super().get_queryset(request)
-        return qs.select_related('computer')
-
-    # def has_add_permission(self, request, obj):
-    #     return True
 
     # def has_change_permission(self, request, obj=None):
     #     return obj is None # only new objects editable
@@ -105,13 +105,14 @@ class ComputerRepairHistoryInline(admin.TabularInline):
 
     
 
-# @admin.register(ComputerRepairHistory)
-# class ComputerRepairHistoryAdmin(admin.ModelAdmin):
-#     list_display = ['computer', 'repaired_component', 'date_of_repair', 'repair_cost']
-#     list_filter = ['date_of_repair', 'repaired_component']
-#     raw_id_fields = ['computer']
-#     search_fields = ['computer__computer_name', 'computer__asset_tag', 'comments']
-#     date_hierarchy = 'date_of_repair'
+@admin.register(ComputerRepairHistory)
+class ComputerRepairHistoryAdmin(admin.ModelAdmin):
+    list_display = ['computer', 'repaired_component', 'date_of_repair', 'repair_cost']
+    list_filter = ['date_of_repair', 'repaired_component']
+    raw_id_fields = ['computer']
+    search_fields = ['computer__computer_name', 'computer__asset_tag', 'comments']
+    date_hierarchy = 'date_of_repair'
+    fields = ['computer', 'repaired_component', 'date_of_repair', 'repair_cost', 'comments']
 
 @admin.register(Computer)
 class ComputerAdmin(admin.ModelAdmin):
