@@ -57,7 +57,6 @@ class ComputerInfoInline(admin.StackedInline):
 class ComputerAssignmentInline(admin.TabularInline):
     model = ComputerAssignment
     fields = ['employee', 'start_date', 'end_date']
-    # readonly_fields = ['start_date']
     extra = 0
     raw_id_fields = ['employee']
     can_delete=True
@@ -88,53 +87,22 @@ class ComputerAssignmentInline(admin.TabularInline):
                 except Computer.DoesNotExist:
                     pass
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-            # and hasattr(self.parent_obj, 'status') and self.parent_obj.status == 'Faulty':
-            # kwargs['queryset'] = Employee.objects.none()
-        
-        # return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
-    def save_formset(self, request, form, formset, change):
-        '''Block assingment to faulty computers'''
-        if formset.model == ComputerAssignment:
-            for formset_form in formset:
-                if formset_form.instance.computer and formset_form.instance.copmuter.status == 'Faulty':
-                    self.message_user(request, "Cannot assign to Faulty computer", messages.ERROR)
-                    return
-            
-        super().save_formset(request, form, formset, change)
-        if formset.model == ComputerAssignment:
-            form.instance.save()
+    def has_view_permission(self, request, obj=None):
+        '''Hide inline completely for faulty computers'''
+        if obj and obj.status == 'Faulty':
+            return False
+        return super().has_view_permission(request, obj)
 
 class ComputerRepairHistoryInline(admin.TabularInline):
     model = ComputerRepairHistory
     fields = ['repaired_component', 'date_of_repair', 'repair_cost', 'comments']
     readonly_fields = fields
-    # list_display = ['repaired_component', 'date_of_repair', 'repair_cost']
     extra = 0
     can_delete = False
 
-    # def get_readonly_fields(self, request, obj=None):
-    #     '''All fields readonly EXCEPT for New Entries'''
-    #     if obj and obj.pk:
-    #         return self.fields
-    #     return []
-    
-    # def has_delete_permission(self, request, obj=None):
-    #     return False
-
-    # def get_queryset(self, request):
-    #     '''Show all history, but readonly'''
-    #     qs = super().get_queryset(request)
-    #     return qs.select_related('computer')
-
     def has_add_permission(self, request, obj):
         return False
-
-    # def has_change_permission(self, request, obj=None):
-    #     return obj is None # only new objects editable
-
-    
-
     
 
 @admin.register(ComputerRepairHistory)
@@ -151,8 +119,6 @@ class ComputerAdmin(admin.ModelAdmin):
     inlines = [ComputerInfoInline, ComputerAssignmentInline, ComputerRepairHistoryInline]
     list_display = ['computer_name', 'asset_tag', 'department', 'current_user', 'status']
     list_filter = ['department']
-    # raw_id_fields = ['current_user']
-    # search_fields = ['computer_name', 'asset_tag']
     readonly_fields = ['asset_tag']
     fields = ['computer_name', 'department', 'asset_tag', 'status']
 
@@ -174,7 +140,13 @@ class ComputerAdmin(admin.ModelAdmin):
         obj.save(update_fields=['status'])
     
     def save_formset(self, request, form, formset, change):
-        '''After inline changes, refresh computer status'''
+        '''Block assingment to faulty computers'''
+        if formset.model == ComputerAssignment:
+            for formset_form in formset:
+                if formset_form.instance.computer and formset_form.instance.computer.status == 'Faulty':
+                    self.message_user(request, "Cannot assign to Faulty computer", messages.ERROR)
+                    return
+            
         super().save_formset(request, form, formset, change)
         if formset.model == ComputerAssignment:
             form.instance.save()
@@ -189,5 +161,10 @@ class ComputerAdmin(admin.ModelAdmin):
         readonly = list(self.readonly_fields)
         if obj and obj.status == 'Faulty':
             readonly.extend(['status', 'current_user', 'computer_name'])
-            # return self.readonly_fields + ['status', 'current_user']
         return readonly
+    
+    def get_inlines(self, request, obj=None):
+        '''Hide assignment of Faulty computers'''
+        if obj and obj.status == 'Faulty':
+            return [ComputerInfoInline, ComputerRepairHistoryInline]
+        return self.inlines
