@@ -95,6 +95,12 @@ class Computer(models.Model):
             self.asset_tag = self.generate_asset_tag()
 
         super().save(*args, **kwargs)
+
+        if self.status == 'Faulty':
+            self.current_user = None
+            super().save(update_fields=['current_user'])
+            return
+        
         latest_assignment = ComputerAssignment.objects.filter(
             computer=self, end_date__isnull=True
         ).order_by('-start_date').first()
@@ -173,6 +179,12 @@ class ComputerAssignment(models.Model):
 
     class Meta:
         ordering = ['-start_date']
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(computer__status='Faulty'),
+                name='no_faulty_assignment'
+            )
+        ]
     
     def __str__(self):
         end = self.end_date or "present"

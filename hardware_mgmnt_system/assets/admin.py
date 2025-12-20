@@ -72,6 +72,38 @@ class ComputerAssignmentInline(admin.TabularInline):
             f'{updated} assignments(s) ended on {now}',
             messages.SUCCESS
         )
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.exclude(computer__status='Faulty')
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'employee':
+            object_id = request.resolver_match.kwargs.get('object_id')
+            if object_id:
+                try:
+                    computer = Computer.objects.get(pk=object_id)
+                    if computer.status == 'Faulty':
+                        kwargs['queryset'] = Employee.objects.none()
+                except Computer.DoesNotExist:
+                    pass
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+            # and hasattr(self.parent_obj, 'status') and self.parent_obj.status == 'Faulty':
+            # kwargs['queryset'] = Employee.objects.none()
+        
+        # return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+    def save_formset(self, request, form, formset, change):
+        '''Block assingment to faulty computers'''
+        if formset.model == ComputerAssignment:
+            for formset_form in formset:
+                if formset_form.instance.computer and formset_form.instance.copmuter.status == 'Faulty':
+                    self.message_user(request, "Cannot assign to Faulty computer", messages.ERROR)
+                    return
+            
+        super().save_formset(request, form, formset, change)
+        if formset.model == ComputerAssignment:
+            form.instance.save()
 
 class ComputerRepairHistoryInline(admin.TabularInline):
     model = ComputerRepairHistory
@@ -125,7 +157,12 @@ class ComputerAdmin(admin.ModelAdmin):
     fields = ['computer_name', 'department', 'asset_tag', 'status']
 
     def save_model(self, request, obj, form, change):
+        original_status = obj.status
+
         super().save_model(request, obj, form, change)
+        
+        if obj.status == 'Faulty':
+            return
         
         if obj.current_user:
             obj.status = 'Issued'
@@ -133,6 +170,8 @@ class ComputerAdmin(admin.ModelAdmin):
             computer=obj, end_date__isnull=True
         ).exists():
             obj.status = 'Inventory'
+        
+        obj.save(update_fields=['status'])
     
     def save_formset(self, request, form, formset, change):
         '''After inline changes, refresh computer status'''
@@ -147,6 +186,8 @@ class ComputerAdmin(admin.ModelAdmin):
         return super().has_delete_permission(request, obj)
     
     def get_readonly_fields(self, request, obj=None):
+        readonly = list(self.readonly_fields)
         if obj and obj.status == 'Faulty':
-            return self.readonly_fields + ['status', 'current_user']
-        return self.readonly_fields
+            readonly.extend(['status', 'current_user', 'computer_name'])
+            # return self.readonly_fields + ['status', 'current_user']
+        return readonly
