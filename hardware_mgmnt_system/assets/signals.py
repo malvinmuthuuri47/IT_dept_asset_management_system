@@ -23,15 +23,6 @@ def update_computer_status_on_user_delete(sender, instance, **kwargs):
     for assignment in assignments:
         assignment.end_date = timezone.now().date()
         assignment.save()
-    
-    # try:
-    #     employee = instance.employee
-    #     computers = Computer.objects.filter(current_user=employee)
-    # except Employee.DoesNotExist:
-    #     computers = Computer.objects.none()
-
-    # for computer in computers:
-    #     computer.save()
 
 @receiver(post_save, sender=ComputerAssignment)
 def update_computer_on_assignment_change(sender, instance, **kwargs):

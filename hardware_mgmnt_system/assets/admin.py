@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 
 # Register your models here.
-# admin.site.register(Employee)
 class EmployeeInline(admin.StackedInline):
     model = Employee
     fields = ['department', 'date_of_birth', 'gender', 'role']
@@ -72,10 +71,6 @@ class ComputerAssignmentInline(admin.TabularInline):
             messages.SUCCESS
         )
     
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.exclude(computer__status='Faulty')
-    
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'employee':
             object_id = request.resolver_match.kwargs.get('object_id')
@@ -87,12 +82,6 @@ class ComputerAssignmentInline(admin.TabularInline):
                 except Computer.DoesNotExist:
                     pass
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
-    def has_view_permission(self, request, obj=None):
-        '''Hide inline completely for faulty computers'''
-        if obj and obj.status == 'Faulty':
-            return False
-        return super().has_view_permission(request, obj)
 
 class ComputerRepairHistoryInline(admin.TabularInline):
     model = ComputerRepairHistory
